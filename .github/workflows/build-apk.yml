@@ -27,7 +27,9 @@ jobs:
       # No package-lock.json in the repo, so use npm install (npm ci needs a lockfile).
       # @capacitor/android is now pinned to ^7 in package.json, matching core and cli.
       - name: Install dependencies
-        run: npm install
+        run: |
+          rm -rf node_modules
+          npm install
 
       - name: Add Android platform if missing
         run: |

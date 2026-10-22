@@ -28,11 +28,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      
       - name: Add Android platform if missing
         run: |
-          if [ ! -d android ]; then
-            npx cap add android
+          if [ ! -x node_modules/.bin/cap ]; then
+            echo "Capacitor CLI executable missing"
+            npm install --save-dev @capacitor/cli
           fi
+          if [ ! -d android ]; then
+            node_modules/.bin/cap add android
+          fi
+
 
       - name: Sync Capacitor
         run: npx cap sync android

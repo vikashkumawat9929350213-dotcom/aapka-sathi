@@ -5,6 +5,9 @@ on:
   push:
     branches: [ main ]
 
+permissions:
+  contents: write
+
 jobs:
   build-apk:
     runs-on: ubuntu-latest
@@ -24,8 +27,6 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      # No package-lock.json in the repo, so use npm install (npm ci needs a lockfile).
-      # @capacitor/android is now pinned to ^7 in package.json, matching core and cli.
       - name: Install dependencies
         run: |
           rm -rf node_modules
@@ -46,8 +47,20 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      - name: Upload APK
+      - name: Rename APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk aapka-sathi.apk
+
+      - name: Upload APK (workflow artifact)
         uses: actions/upload-artifact@v4
         with:
           name: aapka-sathi-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: aapka-sathi.apk
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: aapka sathi v1.0.${{ github.run_number }}
+          body: Debug APK build from commit ${{ github.sha }}. Download aapka-sathi.apk below and install it on your Android phone.
+          files: aapka-sathi.apk
+          make_latest: true

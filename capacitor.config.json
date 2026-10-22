@@ -1,0 +1,12 @@
+{
+  "appId": "com.aapkasathi.chat",
+  "appName": "aapka sathi",
+  "webDir": "public",
+  "server": {
+    "url": "https://YOUR-APP.onrender.com",
+    "cleartext": false
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}

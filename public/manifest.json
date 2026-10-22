@@ -1,0 +1,10 @@
+{
+  "name": "aapka sathi",
+  "short_name": "aapka sathi",
+  "description": "Private anonymous chat",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#100d1b",
+  "theme_color": "#17112d",
+  "icons": []
+}

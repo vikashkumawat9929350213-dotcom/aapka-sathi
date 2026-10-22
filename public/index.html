@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#17112d">
+  <meta name="description" content="aapka sathi — private conversations without accounts">
+  <title>aapka sathi — private chat</title>
+  <link rel="manifest" href="/manifest.json">
+  <style>
+    :root { color-scheme: dark; --bg:#100d1b; --panel:#1b1730; --panel2:#241e3c; --accent:#a78bfa; --accent2:#7c3aed; --text:#f7f4ff; --muted:#b8b0ce; --border:#3a3158; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; background:radial-gradient(ellipse at top,#2a1d4d 0%,var(--bg) 55%); color:var(--text); font:16px/1.45 system-ui,-apple-system,Segoe UI,sans-serif; display:flex; justify-content:center; padding:20px 12px; }
+    .app { width:min(100%,720px); display:flex; flex-direction:column; gap:14px; }
+    header { display:flex; align-items:center; gap:12px; padding:8px 4px; }
+    .logo { width:48px;height:48px;border-radius:16px;background:linear-gradient(135deg,#a78bfa,#6d28d9);display:grid;place-items:center;font-size:25px;box-shadow:0 8px 30px #7c3aed44; }
+    h1 { font-size:23px;margin:0;letter-spacing:-.4px; } .tag { color:var(--muted);font-size:13px;margin-top:2px; }
+    .card { background:#1b1730ee;border:1px solid var(--border);border-radius:22px;padding:18px;box-shadow:0 18px 50px #0002; }
+    .row { display:flex;gap:10px;align-items:center;flex-wrap:wrap; }
+    button,input { font:inherit;border-radius:13px;border:1px solid var(--border);padding:12px 14px; }
+    button { cursor:pointer;color:white;background:var(--accent2);font-weight:650; }
+    button.secondary { background:var(--panel2); } button:disabled { opacity:.5;cursor:not-allowed; }
+    input { color:var(--text);background:#100d1b;min-width:0;flex:1;width:100%; }
+    label { display:block;color:var(--muted);font-size:13px;margin:0 0 6px; }
+    .field { flex:1;min-width:180px; }
+    .status { color:var(--muted);font-size:13px;display:flex;gap:8px;align-items:center; }
+    .dot { width:8px;height:8px;border-radius:50%;background:#fbbf24;display:inline-block; } .dot.on { background:#34d399; }
+    #chat { display:none;min-height:55vh;flex-direction:column; }
+    .chathead { display:flex;justify-content:space-between;gap:10px;align-items:center;border-bottom:1px solid var(--border);padding-bottom:13px; }
+    #messages { display:flex;flex:1;flex-direction:column;gap:10px;overflow:auto;max-height:48vh;padding:16px 2px; }
+    .bubble { max-width:85%;padding:11px 13px;border-radius:17px;background:var(--panel2);overflow-wrap:anywhere;white-space:pre-wrap; }
+    .bubble.mine { align-self:flex-end;background:#5b21b6; } .bubble.theirs { align-self:flex-start; }
+    .time { display:block;color:#d8cafa;font-size:10px;margin-top:4px;opacity:.8; }
+    .compose { display:flex;gap:8px;border-top:1px solid var(--border);padding-top:13px; } .compose input { flex:1; }
+    .hint { font-size:12px;color:var(--muted);margin:10px 0 0; }
+    .error { color:#fca5a5;font-size:13px;min-height:18px;margin-top:8px; }
+    .pill { border:1px solid var(--border);border-radius:999px;padding:5px 9px;color:var(--muted);font-size:12px; }
+    .notice { font-size:12px;color:var(--muted);line-height:1.5; }
+    @media(max-width:520px){body{padding:12px 9px}.card{padding:14px;border-radius:18px}h1{font-size:21px}#messages{max-height:55vh}.compose button{padding:11px}}
+  </style>
+</head>
+<body>
+<main class="app">
+  <header><div class="logo" aria-hidden="true">♡</div><div><h1>aapka sathi</h1><div class="tag">Aapki baat, aapki privacy.</div></div><span class="pill" style="margin-left:auto">No account</span></header>
+  <section class="card" id="lobby">
+    <h2 style="margin:0 0 6px;font-size:19px">Start a private chat</h2>
+    <p class="notice">No name, phone number, or email needed. Create a room and share its secret code with one person. Keep the code private: anyone who has it can join.</p>
+    <div class="row" style="margin-top:16px"><button id="create">Create private room</button></div>
+    <div style="height:1px;background:var(--border);margin:18px 0"></div>
+    <label for="roomCode">Have a room code?</label>
+    <div class="row"><input id="roomCode" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste the private room code"><button id="join" class="secondary">Join room</button></div>
+    <div class="error" id="lobbyError" role="status"></div>
+  </section>
+  <section class="card" id="chat">
+    <div class="chathead"><div><strong>Private room</strong><div class="status" id="peerStatus"><span class="dot"></span><span>Connecting…</span></div></div><button class="secondary" id="share">Share code</button></div>
+    <div class="row" style="margin-top:12px"><input id="activeCode" readonly aria-label="Current room code"><button class="secondary" id="copy">Copy</button><button class="secondary" id="leave">Leave</button></div>
+    <div id="messages" aria-live="polite"><div class="notice">Messages are encrypted in your browser before sending. The server relays ciphertext only.</div></div>
+    <form class="compose" id="sendForm"><input id="messageInput" maxlength="2000" autocomplete="off" placeholder="Write a message…" aria-label="Message"><button id="send" type="submit">Send</button></form>
+    <p class="hint">Messages are not saved by this starter server. They disappear when you leave or refresh.</p>
+  </section>
+  <section class="card"><div class="notice"><strong style="color:var(--text)">Privacy notes</strong><br>• This starter app does not require an account.<br>• Chat content uses browser-side encryption; the server only relays encrypted messages.<br>• Use HTTPS in production. This demo has no independent security audit, and metadata such as IP addresses may be visible to your hosting provider.<br>• Do not share sensitive information until you trust the deployed service.</div></section>
+</main>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const socket = io({ transports: ["websocket", "polling"] });
+  let room = "", cryptoKey = null, myId = null;
+  const encoder = new TextEncoder(), decoder = new TextDecoder();
+  const b64 = bytes => btoa(String.fromCharCode(...new Uint8Array(bytes)));
+  const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+  const randomCode = () => {
+    const bytes = crypto.getRandomValues(new Uint8Array(24));
+    return b64(bytes).replace(/[+/=]/g, "").slice(0, 32);
+  };
+  async function deriveKey(code) {
+    const digest = await crypto.subtle.digest("SHA-256", encoder.encode(code));
+    return crypto.subtle.importKey("raw", digest, {name:"AES-GCM"}, false, ["encrypt","decrypt"]);
+  }
+  async function encrypt(text) {
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const encrypted = await crypto.subtle.encrypt({name:"AES-GCM",iv}, cryptoKey, encoder.encode(text));
+    return {iv:b64(iv), ciphertext:b64(encrypted)};
+  }
+  async function decrypt(payload) {
+    const plain = await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(payload.iv)}, cryptoKey, unb64(payload.ciphertext));
+    return decoder.decode(plain);
+  }
+  function showError(message) { $("lobbyError").textContent = message || ""; }
+  function setPeer(online) {
+    $("peerStatus").innerHTML = '<span class="dot '+(online?'on':'')+'"></span><span>'+(online?'Other person connected':'Waiting for the other person')+'</span>';
+  }
+  function addMessage(text, mine, sentAt) {
+    const bubble = document.createElement("div");
+    bubble.className = "bubble " + (mine ? "mine" : "theirs");
+    bubble.appendChild(document.createTextNode(text));
+    const time = document.createElement("span"); time.className = "time";
+    time.textContent = new Date(sentAt || Date.now()).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+    bubble.appendChild(time); $("messages").appendChild(bubble); $("messages").scrollTop = $("messages").scrollHeight;
+  }
+  async function enterRoom(code) {
+    showError("");
+    if (!window.isSecureContext && location.hostname !== "localhost") {
+      showError("Secure HTTPS is required for browser encryption. Deploy this site with HTTPS."); return;
+    }
+    if (!/^[A-Za-z0-9_-]{20,80}$/.test(code)) {
+      showError("Please enter a valid room code (20–80 letters/numbers)."); return;
+    }
+    try { cryptoKey = await deriveKey(code); } catch(e) { showError("This browser does not support secure encryption."); return; }
+    socket.emit("join-room", code, result => {
+      if (!result || !result.ok) { cryptoKey = null; showError(result?.error || "Could not join room."); return; }
+      room = code; myId = socket.id;
+      $("lobby").style.display = "none"; $("chat").style.display = "flex";
+      $("activeCode").value = code; $("messages").replaceChildren(); setPeer(result.count > 1);
+      history.replaceState(null, "", location.pathname);
+      $("messageInput").focus();
+    });
+  }
+  $("create").addEventListener("click", () => { const code = randomCode(); $("roomCode").value = code; enterRoom(code); });
+  $("join").addEventListener("click", () => enterRoom($("roomCode").value.trim()));
+  $("copy").addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(room); $("copy").textContent = "Copied!"; setTimeout(()=> $("copy").textContent="Copy",1200); }
+    catch(e) { $("activeCode").select(); document.execCommand("copy"); }
+  });
+  $("share").addEventListener("click", async () => {
+    const text = "Join my private aapka sathi chat. Open the site and enter this room code: " + room;
+    try { if (navigator.share) await navigator.share({title:"aapka sathi private chat",text}); else { await navigator.clipboard.writeText(text); alert("Invite copied."); } }
+    catch(e) {}
+  });
+  $("leave").addEventListener("click", () => { socket.disconnect(); room=""; cryptoKey=null; location.reload(); });
+  $("sendForm").addEventListener("submit", async e => {
+    e.preventDefault(); const text = $("messageInput").value.trim();
+    if (!text || !room || !cryptoKey) return;
+    $("send").disabled = true;
+    try { const payload = await encrypt(text); socket.emit("encrypted-message", payload); addMessage(text,true,Date.now()); $("messageInput").value=""; }
+    catch(e) { addMessage("Could not encrypt message. Please reload and rejoin.",true,Date.now()); }
+    finally { $("send").disabled = false; $("messageInput").focus(); }
+  });
+  socket.on("encrypted-message", async payload => {
+    try { addMessage(await decrypt(payload),false,payload.sentAt); }
+    catch(e) { addMessage("[Message could not be decrypted — check that both people used the same room code.]",false,payload.sentAt); }
+  });
+  socket.on("peer-status", state => setPeer(!!state.online));
+  socket.on("connect", () => { if (room) socket.emit("join-room", room, r => { if (r?.ok) setPeer(r.count > 1); }); });
+  socket.on("disconnect", () => { if (room) setPeer(false); });
+  const params = new URLSearchParams(location.search); const incoming = params.get("room");
+  if (incoming) { $("roomCode").value=incoming; enterRoom(incoming); }
+})();
+</script>
+</body>
+</html>

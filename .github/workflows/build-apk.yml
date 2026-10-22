@@ -1,4 +1,3 @@
-
 name: Build aapka sathi Android APK
 
 on:
@@ -25,19 +24,16 @@ jobs:
           distribution: temurin
           java-version: 21
 
+      # No package-lock.json in the repo, so use npm install (npm ci needs a lockfile).
+      # @capacitor/android is now pinned to ^7 in package.json, matching core and cli.
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
-      
-     
       - name: Add Android platform if missing
         run: |
-          npm install @capacitor/android
           if [ ! -d android ]; then
             npx cap add android
           fi
-
-
 
       - name: Sync Capacitor
         run: npx cap sync android

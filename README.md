@@ -3,7 +3,7 @@
 A small web chat starter with a two-person room, no account signup, in-browser AES-GCM message encryption, and an in-memory relay server. It can be packaged for Android using Capacitor.
 
 ## Run locally
-Requirements: Node.js 18+.
+Requirements: Node.js 18+. 
 
 ```bash
 npm install

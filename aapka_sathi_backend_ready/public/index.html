@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#17112d">
+  <meta name="description" content="aapka sathi — anonymous two-person chat with browser-side encryption">
+  <title>aapka sathi — private chat</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<main class="app">
+  <header><div class="logo" aria-hidden="true">♡</div><div><h1>aapka sathi</h1><div class="tag">Aapki baat, aapki privacy.</div></div><span class="pill top-pill">No account</span></header>
+  <section class="card" id="lobby">
+    <h2>Start a private chat</h2>
+    <p class="notice">No signup, phone number, or email. Create a room and share the invite link or full room code with one person. Keep it secret: anyone with it can join.</p>
+    <div class="row top-row"><button id="create">Create private room</button></div>
+    <div class="separator"></div>
+    <label for="roomCode">Have an invite link or room code?</label>
+    <div class="row"><input id="roomCode" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste invite link or full room code"><button id="join" class="secondary">Join room</button></div>
+    <div class="error" id="lobbyError" role="status" aria-live="polite"></div>
+  </section>
+  <section class="card chat" id="chat">
+    <div class="chathead"><div><strong>Private room</strong><div class="status" id="peerStatus"><span class="dot"></span><span>Connecting…</span></div></div><button class="secondary" id="share">Share invite</button></div>
+    <div class="row code-row"><input id="activeCode" readonly aria-label="Full private room code"><button class="secondary" id="copy">Copy code</button><button class="secondary" id="leave">Leave</button></div>
+    <div class="notice security-note">Encrypted in this browser before sending. The server relays ciphertext only. Invite link/code contains the secret key—share only with the intended person.</div>
+    <div id="messages" aria-live="polite"><div class="notice">Waiting for messages…</div></div>
+    <form class="compose" id="sendForm"><input id="messageInput" maxlength="2000" autocomplete="off" placeholder="Write a message…" aria-label="Message"><button id="send" type="submit">Send</button></form>
+    <p class="hint">Messages are not stored by this app. They disappear when you leave, refresh, or disconnect.</p>
+  </section>
+  <section class="card"><div class="notice"><strong class="notice-title">Privacy notes</strong><br>• No account, phone number, or email is required.<br>• AES-GCM encryption happens in your browser; the key is not sent to the chat server.<br>• The server keeps room membership in memory and relays ciphertext only; it does not save messages.<br>• The hosting provider may still see connection metadata such as IP address. This starter has not had an independent security audit; do not use it for highly sensitive information.</div></section>
+</main>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/app.js" defer></script>
+</body>
+</html>

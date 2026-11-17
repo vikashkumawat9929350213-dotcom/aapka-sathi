@@ -1,0 +1,23 @@
+{
+  "name": "aapka-sathi-e2ee",
+  "version": "1.1.0",
+  "private": true,
+  "description": "Anonymous two-person E2EE chat with validated, rate-limited Socket.IO relay backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check server.js && node --check public/app.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^6.2.1",
+    "@capacitor/cli": "^6.2.1",
+    "@capacitor/core": "^6.2.1"
+  }
+}

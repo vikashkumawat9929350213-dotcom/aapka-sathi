@@ -1,0 +1,10 @@
+{
+  "appId": "com.aapkasathi.chat",
+  "appName": "aapka sathi",
+  "webDir": "public",
+  "server": {
+    "url": "https://REPLACE-WITH-YOUR-DEPLOYED-SITE.example",
+    "cleartext": false,
+    "androidScheme": "https"
+  }
+}
